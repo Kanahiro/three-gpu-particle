@@ -10,7 +10,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc",
-        "build:web": "tsc && vite build",
+        "build:web": "vite build",
         "preview": "vite preview",
         "prepare": "tsc"
     },

@@ -18,5 +18,5 @@
     "skipLibCheck": true,
     "outDir": "dist"
   },
-  "include": ["src/terrain.ts"]
+  "include": ["src/index.ts"]
 }
