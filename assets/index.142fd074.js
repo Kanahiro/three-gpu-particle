@@ -3209,7 +3209,7 @@ void main() {
                 return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 0.000437585453 * time);
             }
     
-            vec3 getWaterflow(vec2 pos) {
+            vec3 getVelocity(vec2 pos) {
                 float xPx = 1.0 / ${i}.0;
                 float yPx = 1.0 / ${r}.0;
                 vec2 centerUv = vec2((pos.x + ${i*.5}.0) / ${i}.0, 
@@ -3231,14 +3231,14 @@ void main() {
                 vec4 position = texture2D( computationTexture, uv );
                 float age = position.z;
     
-                vec3 waterflow = getWaterflow(position.xy);
+                vec3 velocity = getVelocity(position.xy);
                 if (age > dropFactor) {
                     // reset particle position
                     vec2 random = vec2((rand(position.xy) - 0.5) * ${i}.0, (rand(position.yz) - 0.5) * ${r}.0);
                     gl_FragColor = vec4(random, 0.0, 0.0);
                 } else {
-                    float velocity = length(waterflow.xy);
-                    gl_FragColor = vec4(position.xy + waterflow.xy * particleSpeed, age + 1.0, velocity);
+                    float absVelocity = length(velocity.xy);
+                    gl_FragColor = vec4(position.xy + velocity.xy * particleSpeed, age + 1.0, absVelocity);
                 }
             }
         `,this.vertexTexture),this.computationVariable.material.uniforms={velocityTexture:{value:this.velocityTexture},time:{value:0},particleSpeed:{value:o},dropFactor:{value:c}},this.gpuRenderer.setVariableDependencies(this.computationVariable,[this.computationVariable]),this.gpuRenderer.init()}getTexture(){return this.gpuRenderer.getCurrentRenderTarget(this.computationVariable).texture}compute(){this.computationVariable.material.uniforms.time.value=performance.now(),this.gpuRenderer.compute()}}class Bd{constructor(e,t,n={}){$e(this,"vertexTexture");$e(this,"particleRenderer");var a,c,l,u,d,p,m;const i=(a=n.width)!=null?a:1024,r=(c=n.height)!=null?c:1024,o=new Pd().load(t);o.magFilter=Be,o.minFilter=Be,this.vertexTexture=new Ud(e,o,{width:i,height:r,particleSpeed:(l=n.particleSpeed)!=null?l:2,particleCount:(u=n.particleCount)!=null?u:64,dropFactor:(d=n.dropFactor)!=null?d:50}),this.particleRenderer=new Fd(e,this.vertexTexture.getTexture(),{width:i,height:r,particleSize:(p=n.particleSize)!=null?p:2,trajectoryFactor:(m=n.trajectoryFactor)!=null?m:.01})}getParticleTexture(){return this.particleRenderer.getTexture()}render(){this.vertexTexture.compute(),this.particleRenderer.render()}}export{en as D,Bd as G,Od as H,It as M,ga as O,ai as P,Cr as S,Pd as T,wd as W,Nt as a};
