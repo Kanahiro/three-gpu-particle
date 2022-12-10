@@ -66,9 +66,6 @@ animate();
 
 import maplibreGl, { Map } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
-
-const terrainSource = useGsiTerrainSource(maplibreGl.addProtocol);
 
 const map = new Map({
     container: 'map',
@@ -83,7 +80,6 @@ const map = new Map({
                 attribution:
                     '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             },
-            terrainSource,
         },
         layers: [
             {
