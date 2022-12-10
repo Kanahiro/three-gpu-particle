@@ -61,7 +61,7 @@ export class VertexTexture {
                 return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 0.000437585453 * time);
             }
     
-            vec3 getWaterflow(vec2 pos) {
+            vec3 getVelocity(vec2 pos) {
                 float xPx = 1.0 / ${width}.0;
                 float yPx = 1.0 / ${height}.0;
                 vec2 centerUv = vec2((pos.x + ${width * 0.5}.0) / ${width}.0, 
@@ -83,14 +83,14 @@ export class VertexTexture {
                 vec4 position = texture2D( computationTexture, uv );
                 float age = position.z;
     
-                vec3 waterflow = getWaterflow(position.xy);
+                vec3 velocity = getVelocity(position.xy);
                 if (age > dropFactor) {
                     // reset particle position
                     vec2 random = vec2((rand(position.xy) - 0.5) * ${width}.0, (rand(position.yz) - 0.5) * ${height}.0);
                     gl_FragColor = vec4(random, 0.0, 0.0);
                 } else {
-                    float velocity = length(waterflow.xy);
-                    gl_FragColor = vec4(position.xy + waterflow.xy * particleSpeed, age + 1.0, velocity);
+                    float absVelocity = length(velocity.xy);
+                    gl_FragColor = vec4(position.xy + velocity.xy * particleSpeed, age + 1.0, absVelocity);
                 }
             }
         `,
