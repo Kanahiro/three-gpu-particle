@@ -1,11 +1,8 @@
 import * as THREE from 'three';
-// @ts-ignore
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-
 import { GpuParticle } from '../src/index';
 
 const VIEW_WIDTH = 1000;
-const VIEW_HEIGHT = 500;
+const VIEW_HEIGHT = 1000;
 
 const threeObject = {
     scene: new THREE.Scene(),
@@ -20,10 +17,6 @@ const threeObject = {
     ),
 };
 threeObject.camera.position.z = 1;
-
-//const controls = new OrbitControls(threeObject.camera, document.body);
-
-document.querySelector('#three')!.appendChild(threeObject.renderer.domElement);
 threeObject.renderer.setSize(VIEW_WIDTH, VIEW_HEIGHT);
 
 const light = new THREE.HemisphereLight(0x888888, 0x0000ff, 1.0);
@@ -38,9 +31,6 @@ const terrainMaterial = new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
     transparent: true,
     uniforms: {
-        orthoTexture: {
-            value: new THREE.TextureLoader().load('./wind.png'),
-        },
         particleTexture: {
             value: gpuParticle.getParticleTexture(),
         },
@@ -53,13 +43,11 @@ const terrainMaterial = new THREE.ShaderMaterial({
     }
     `,
     fragmentShader: `
-        uniform sampler2D orthoTexture;
         uniform sampler2D particleTexture;
         varying vec2 vUv;
         void main() {
-            vec4 orthoColor = texture2D(orthoTexture, vUv);
             vec4 particleColor = texture2D(particleTexture, vUv);
-            gl_FragColor = vec4(mix(orthoColor.rgb, particleColor.rgb, particleColor.a), 1.0);
+            gl_FragColor = vec4(particleColor);
         }
     `,
 });
@@ -75,3 +63,56 @@ const animate = () => {
     requestAnimationFrame(animate);
 };
 animate();
+
+import maplibreGl, { Map } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { useGsiTerrainSource } from 'maplibre-gl-gsi-terrain';
+
+const terrainSource = useGsiTerrainSource(maplibreGl.addProtocol);
+
+const map = new Map({
+    container: 'map',
+    style: {
+        version: 8,
+        sources: {
+            osm: {
+                type: 'raster',
+                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                maxzoom: 19,
+                tileSize: 256,
+                attribution:
+                    '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            },
+            terrainSource,
+        },
+        layers: [
+            {
+                id: 'osm-layer',
+                source: 'osm',
+                type: 'raster',
+            },
+        ],
+    },
+});
+
+map.on('load', () => {
+    map.addSource('three', {
+        type: 'canvas',
+        canvas: threeObject.renderer.domElement,
+        coordinates: [
+            [-180, 85],
+            [180, 85],
+            [180, -85],
+            [-180, -85],
+        ],
+    });
+
+    map.addLayer({
+        id: 'three',
+        source: 'three',
+        type: 'raster',
+        paint: {
+            'raster-opacity': 1.0,
+        },
+    });
+});

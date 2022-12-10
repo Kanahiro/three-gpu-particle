@@ -109,20 +109,21 @@ export class ParticleRenderer {
     
                 void main() {
                     vUv = uv;
-                    vPos = texture2D( posTexture, vUv);
+                    vPos = texture2D(posTexture, vUv); // xPost, yPost, age, velocity
                     
                     gl_PointSize = particleSize;
-                    gl_Position =  projectionMatrix * modelViewMatrix * vec4(vPos.xy, 0.0, vPos.w);
+                    gl_Position =  projectionMatrix * modelViewMatrix * vec4(vPos.xy, 0.0, 1.0);
                 }
             `,
             fragmentShader: `
                 varying vec4 vPos;
                 void main() {
                     float f = length( gl_PointCoord - vec2( 0.5, 0.5 ) );
-                    if ( f > 0.3 ) {
-                        discard;
-                    }
-                    gl_FragColor = vec4(vec3(1.0), vPos.w);
+                    if ( f > 0.3 ) { discard; }
+                    
+                    vec3 slowest = vec3(1.0, 1.0, 1.0);
+                    vec3 fastest = vec3(1.0, 1.0, 1.0);
+                    gl_FragColor = vec4(mix(slowest, fastest, vPos.w * 3.0), 1.0);
                 }
             `,
         });
@@ -158,7 +159,7 @@ export class ParticleRenderer {
     
                     void main() {
                         vec4 curr = texture2D( currTexture, vUv );
-                        vec4 prev = texture2D( prevTexture, vUv ) - trajectoryFactor;
+                        vec4 prev = texture2D( prevTexture, vUv ) - vec4(vec3(0.0), trajectoryFactor);
                         gl_FragColor = curr + prev;
                     }
                 `,

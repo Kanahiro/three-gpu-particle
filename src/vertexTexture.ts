@@ -84,11 +84,13 @@ export class VertexTexture {
                 float age = position.z;
     
                 vec3 waterflow = getWaterflow(position.xy);
-                vec2 random = vec2((rand(position.xy) - 0.5) * ${width}.0, (rand(position.yz) - 0.5) * ${height}.0);
                 if (age > dropFactor) {
+                    // reset particle position
+                    vec2 random = vec2((rand(position.xy) - 0.5) * ${width}.0, (rand(position.yz) - 0.5) * ${height}.0);
                     gl_FragColor = vec4(random, 0.0, 0.0);
                 } else {
-                    gl_FragColor = vec4(position.xy + waterflow.xy * particleSpeed + random * 0.001, age + 1.0, 1.0);
+                    float velocity = length(waterflow.xy);
+                    gl_FragColor = vec4(position.xy + waterflow.xy * particleSpeed, age + 1.0, velocity);
                 }
             }
         `,
