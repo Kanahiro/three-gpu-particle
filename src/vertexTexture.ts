@@ -44,7 +44,7 @@ export class VertexTexture {
                 (Math.random() - 0.5) * height; // y
             this.vertexTexture.image.data[i * 4 + 2] =
                 Math.random() * dropFactor; // age
-            this.vertexTexture.image.data[i * 4 + 3] = 0; // visibility
+            this.vertexTexture.image.data[i * 4 + 3] = 0; // velocity
         }
 
         this.computationVariable = this.gpuRenderer.addVariable(
@@ -113,6 +113,21 @@ export class VertexTexture {
     getTexture() {
         return this.gpuRenderer.getCurrentRenderTarget(this.computationVariable)
             .texture;
+    }
+
+    updateVelocityTexture(texture: Texture) {
+        this.computationVariable.material.uniforms.velocityTexture.value =
+            texture;
+    }
+
+    updateParticleSpeed(particleSpeed: number) {
+        this.computationVariable.material.uniforms.particleSpeed.value =
+            particleSpeed;
+    }
+
+    updateDropFactor(dropFactor: number) {
+        this.computationVariable.material.uniforms.dropFactor.value =
+            dropFactor;
     }
 
     compute() {

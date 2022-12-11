@@ -1,4 +1,4 @@
-import { NearestFilter, TextureLoader, WebGLRenderer } from 'three';
+import { Texture, WebGLRenderer } from 'three';
 import { ParticleRenderer } from './particleRenderer';
 import { VertexTexture } from './vertexTexture';
 
@@ -18,15 +18,11 @@ export class GpuParticle {
 
     constructor(
         renderer: WebGLRenderer,
-        velocityTexturePath: string,
+        velocityTexture: Texture,
         options: Options = {},
     ) {
         const width = options.width ?? 1024;
         const height = options.height ?? 1024;
-
-        const velocityTexture = new TextureLoader().load(velocityTexturePath);
-        velocityTexture.magFilter = NearestFilter;
-        velocityTexture.minFilter = NearestFilter;
 
         this.vertexTexture = new VertexTexture(renderer, velocityTexture, {
             width,
@@ -41,10 +37,18 @@ export class GpuParticle {
             {
                 width,
                 height,
-                particleSize: options.particleSize ?? 2,
+                particleSize: options.particleSize ?? 3,
                 trajectoryFactor: options.trajectoryFactor ?? 0.01,
             },
         );
+    }
+
+    setVelocityTexture(texture: Texture) {
+        this.vertexTexture.updateVelocityTexture(texture);
+    }
+
+    setParticleSpeed(particleSpeed: number) {
+        this.vertexTexture.updateParticleSpeed(particleSpeed);
     }
 
     getParticleTexture() {

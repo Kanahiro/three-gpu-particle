@@ -26,20 +26,24 @@ threeObject.camera.position.z = 1;
 document.querySelector('#three')!.appendChild(threeObject.renderer.domElement);
 threeObject.renderer.setSize(VIEW_WIDTH, VIEW_HEIGHT);
 
-const light = new THREE.HemisphereLight(0x888888, 0x0000ff, 1.0);
-threeObject.scene.add(light);
+const velocityTexture = new THREE.TextureLoader().load('./wind.png');
+velocityTexture.magFilter = THREE.NearestFilter;
+velocityTexture.minFilter = THREE.NearestFilter;
+const velocityTexture2 = new THREE.TextureLoader().load('./wind2.png');
+velocityTexture2.magFilter = THREE.NearestFilter;
+velocityTexture2.minFilter = THREE.NearestFilter;
 
-const gpuParticle = new GpuParticle(threeObject.renderer, './wind.png', {
+const gpuParticle = new GpuParticle(threeObject.renderer, velocityTexture, {
     width: VIEW_WIDTH,
     height: VIEW_HEIGHT,
 });
 
-const terrainMaterial = new THREE.ShaderMaterial({
+const viewMaterial = new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
     transparent: true,
     uniforms: {
-        orthoTexture: {
-            value: new THREE.TextureLoader().load('./wind.png'),
+        backgroundTexture: {
+            value: velocityTexture,
         },
         particleTexture: {
             value: gpuParticle.getParticleTexture(),
@@ -53,21 +57,33 @@ const terrainMaterial = new THREE.ShaderMaterial({
     }
     `,
     fragmentShader: `
-        uniform sampler2D orthoTexture;
+        uniform sampler2D backgroundTexture;
         uniform sampler2D particleTexture;
         varying vec2 vUv;
         void main() {
-            vec4 orthoColor = texture2D(orthoTexture, vUv);
+            vec4 backgroundColor = texture2D(backgroundTexture, vUv);
             vec4 particleColor = texture2D(particleTexture, vUv);
-            gl_FragColor = vec4(mix(orthoColor.rgb, particleColor.rgb, particleColor.a), 1.0);
+            gl_FragColor = vec4(mix(backgroundColor.rgb, particleColor.rgb, particleColor.a), 1.0);
         }
     `,
 });
 const view = new THREE.Mesh(
     new THREE.PlaneGeometry(VIEW_WIDTH, VIEW_HEIGHT),
-    terrainMaterial,
+    viewMaterial,
 );
 threeObject.scene.add(view);
+
+// ui
+document.getElementById('wind1')!.onclick = () => {
+    gpuParticle.setVelocityTexture(velocityTexture);
+    gpuParticle.setParticleSpeed(2);
+    viewMaterial.uniforms.backgroundTexture.value = velocityTexture;
+};
+document.getElementById('wind2')!.onclick = () => {
+    gpuParticle.setVelocityTexture(velocityTexture2);
+    gpuParticle.setParticleSpeed(8);
+    viewMaterial.uniforms.backgroundTexture.value = velocityTexture2;
+};
 
 const animate = () => {
     gpuParticle.render();

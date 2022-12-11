@@ -22,7 +22,11 @@ threeObject.renderer.setSize(VIEW_WIDTH, VIEW_HEIGHT);
 const light = new THREE.HemisphereLight(0x888888, 0x0000ff, 1.0);
 threeObject.scene.add(light);
 
-const gpuParticle = new GpuParticle(threeObject.renderer, './wind.png', {
+const velocityTexture = new THREE.TextureLoader().load('./wind.png');
+velocityTexture.magFilter = THREE.NearestFilter;
+velocityTexture.minFilter = THREE.NearestFilter;
+
+const gpuParticle = new GpuParticle(threeObject.renderer, velocityTexture, {
     width: VIEW_WIDTH,
     height: VIEW_HEIGHT,
 });
