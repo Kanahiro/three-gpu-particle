@@ -29,6 +29,7 @@ velocityTexture.minFilter = THREE.NearestFilter;
 const gpuParticle = new GpuParticle(threeObject.renderer, velocityTexture, {
     width: VIEW_WIDTH,
     height: VIEW_HEIGHT,
+    repeat: true,
 });
 
 const terrainMaterial = new THREE.ShaderMaterial({

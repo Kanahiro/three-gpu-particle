@@ -4,8 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 import { GpuParticle } from '../src/index';
 
-const VIEW_WIDTH = 1000;
-const VIEW_HEIGHT = 500;
+const VIEW_WIDTH = 1024;
+const VIEW_HEIGHT = 512;
 
 const threeObject = {
     scene: new THREE.Scene(),
@@ -36,6 +36,7 @@ velocityTexture2.minFilter = THREE.NearestFilter;
 const gpuParticle = new GpuParticle(threeObject.renderer, velocityTexture, {
     width: VIEW_WIDTH,
     height: VIEW_HEIGHT,
+    repeat: true,
 });
 
 const viewMaterial = new THREE.ShaderMaterial({

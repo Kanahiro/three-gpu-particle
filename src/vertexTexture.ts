@@ -10,6 +10,7 @@ type VertexTextureOptions = {
     particleSpeed: number;
     particleCount: number;
     dropFactor: number;
+    repeat: boolean;
 };
 
 export class VertexTexture {
@@ -25,8 +26,14 @@ export class VertexTexture {
     ) {
         this.velocityTexture = velocityTexture;
 
-        const { width, height, particleSpeed, particleCount, dropFactor } =
-            options;
+        const {
+            width,
+            height,
+            particleSpeed,
+            particleCount,
+            dropFactor,
+            repeat,
+        } = options;
 
         this.gpuRenderer = new GPUComputationRenderer(
             particleCount,
@@ -56,6 +63,7 @@ export class VertexTexture {
             uniform sampler2D velocityTexture;
             uniform float particleSpeed;
             uniform float dropFactor;
+            uniform bool repeat;
     
             float rand(vec2 co){
                 return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 0.000437585453 * time);
@@ -80,7 +88,8 @@ export class VertexTexture {
             void main()	{
     
                 vec2 uv = gl_FragCoord.xy / resolution.xy;
-                vec4 position = texture2D( computationTexture, uv );
+                vec4 position = texture2D(computationTexture, uv);
+
                 float age = position.z;
     
                 vec3 velocity = getVelocity(position.xy);
@@ -90,7 +99,20 @@ export class VertexTexture {
                     gl_FragColor = vec4(random, 0.0, 0.0);
                 } else {
                     float absVelocity = length(velocity.xy);
-                    gl_FragColor = vec4(position.xy + velocity.xy * particleSpeed, age + 1.0, absVelocity);
+                    vec2 newPosition = position.xy + velocity.xy * particleSpeed;
+                    if (repeat) {
+                        if (newPosition.x < -0.5 * ${width}.0) {
+                            newPosition.x += 1.0 * ${width}.0;
+                        } else if (0.5 * ${width}.0 < newPosition.x) {
+                            newPosition.x -= 1.0 * ${width}.0;
+                        }
+                        if (newPosition.y < -0.5 * ${height}.0) {
+                            newPosition.y += 1.0 * ${height}.0;
+                        } else if (0.5 * ${height}.0 < newPosition.y) {
+                            newPosition.y -= 1.0 * ${height}.0;
+                        }
+                    }
+                    gl_FragColor = vec4(newPosition, age + 1.0, absVelocity);
                 }
             }
         `,
@@ -102,6 +124,7 @@ export class VertexTexture {
             time: { value: 0 },
             particleSpeed: { value: particleSpeed },
             dropFactor: { value: dropFactor },
+            repeat: { value: repeat },
         };
 
         this.gpuRenderer.setVariableDependencies(this.computationVariable, [

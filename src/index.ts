@@ -10,6 +10,7 @@ type Options = {
     particleCount?: number;
     dropFactor?: number;
     trajectoryFactor?: number;
+    repeat?: boolean;
 };
 
 export class GpuParticle {
@@ -30,6 +31,7 @@ export class GpuParticle {
             particleSpeed: options.particleSpeed ?? 2,
             particleCount: options.particleCount ?? 64,
             dropFactor: options.dropFactor ?? 50,
+            repeat: options.repeat ?? false,
         });
         this.particleRenderer = new ParticleRenderer(
             renderer,
