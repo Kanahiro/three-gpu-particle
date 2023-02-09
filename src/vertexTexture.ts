@@ -59,21 +59,20 @@ export class VertexTexture {
             `
             precision highp float;
             
-            uniform float time;
             uniform sampler2D velocityTexture;
             uniform float particleSpeed;
             uniform float dropFactor;
             uniform bool repeat;
     
-            float rand(vec2 co){
-                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 0.000437585453 * time);
+            float rand(vec2 p){
+                return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453);
             }
     
             vec3 getVelocity(vec2 pos) {
                 float xPx = 1.0 / ${width}.0;
                 float yPx = 1.0 / ${height}.0;
-                vec2 centerUv = vec2((pos.x + ${width * 0.5}.0) / ${width}.0, 
-                                    (pos.y + ${height * 0.5}.0) / ${height}.0);
+                vec2 centerUv = vec2(pos.x / ${width}.0 + 0.5, 
+                                    pos.y / ${height}.0 + 0.5);
                 vec3 center = texture2D(velocityTexture, centerUv).rgb;
                 vec3 left = texture2D(velocityTexture, centerUv - vec2(xPx, 0.0)).rgb;
                 vec3 top = texture2D(velocityTexture, centerUv + vec2(0.0, yPx)).rgb;
@@ -95,7 +94,7 @@ export class VertexTexture {
                 vec3 velocity = getVelocity(position.xy);
                 if (age > dropFactor) {
                     // reset particle position
-                    vec2 random = vec2((rand(position.xy) - 0.5) * ${width}.0, (rand(position.yz) - 0.5) * ${height}.0);
+                    vec2 random = vec2((rand(position.xy) - 0.5) * ${width}.0, (rand(position.yx) - 0.5) * ${height}.0);
                     gl_FragColor = vec4(random, 0.0, 0.0);
                 } else {
                     float absVelocity = length(velocity.xy);
@@ -112,7 +111,7 @@ export class VertexTexture {
                             newPosition.y -= 1.0 * ${height}.0;
                         }
                     }
-                    gl_FragColor = vec4(newPosition, age + 1.0, absVelocity);
+                    gl_FragColor = vec4(newPosition, age + rand(vec2(absVelocity, age)), absVelocity);
                 }
             }
         `,
@@ -121,7 +120,6 @@ export class VertexTexture {
 
         this.computationVariable.material.uniforms = {
             velocityTexture: { value: this.velocityTexture },
-            time: { value: 0 },
             particleSpeed: { value: particleSpeed },
             dropFactor: { value: dropFactor },
             repeat: { value: repeat },
@@ -154,8 +152,6 @@ export class VertexTexture {
     }
 
     compute() {
-        this.computationVariable.material.uniforms.time.value =
-            performance.now();
         this.gpuRenderer.compute();
     }
 }

@@ -1,11 +1,12 @@
 import * as THREE from 'three';
+
 // @ts-ignore
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 import { GpuParticle } from '../src/index';
 
-const VIEW_WIDTH = 1024;
-const VIEW_HEIGHT = 512;
+const VIEW_WIDTH = 800;
+const VIEW_HEIGHT = 400;
 
 const threeObject = {
     scene: new THREE.Scene(),
@@ -33,11 +34,7 @@ const velocityTexture2 = new THREE.TextureLoader().load('./wind2.png');
 velocityTexture2.magFilter = THREE.NearestFilter;
 velocityTexture2.minFilter = THREE.NearestFilter;
 
-const gpuParticle = new GpuParticle(threeObject.renderer, velocityTexture, {
-    width: VIEW_WIDTH,
-    height: VIEW_HEIGHT,
-    repeat: true,
-});
+const gpuParticle = new GpuParticle(threeObject.renderer, velocityTexture);
 
 const viewMaterial = new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
