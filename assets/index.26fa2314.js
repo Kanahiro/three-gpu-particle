@@ -3197,23 +3197,23 @@ void main() {
 	gl_FragColor = texture2D( passThruTexture, uv );
 
 }
-`}}}class Nd{constructor(e,t,n){$e(this,"gpuRenderer");$e(this,"computationVariable");$e(this,"velocityTexture");$e(this,"vertexTexture");this.velocityTexture=t;const{width:i,height:r,particleSpeed:o,particleCount:a,dropFactor:c}=n;this.gpuRenderer=new Fd(a,a,e),this.vertexTexture=this.gpuRenderer.createTexture();for(let l=0;l<this.vertexTexture.image.data.length/4;l++)this.vertexTexture.image.data[l*4]=(Math.random()-.5)*i,this.vertexTexture.image.data[l*4+1]=(Math.random()-.5)*r,this.vertexTexture.image.data[l*4+2]=Math.random()*c,this.vertexTexture.image.data[l*4+3]=0;this.computationVariable=this.gpuRenderer.addVariable("computationTexture",`
+`}}}class Nd{constructor(e,t,n){$e(this,"gpuRenderer");$e(this,"computationVariable");$e(this,"velocityTexture");$e(this,"vertexTexture");this.velocityTexture=t;const{width:i,height:r,particleSpeed:o,particleCount:a,dropFactor:c,repeat:l}=n;this.gpuRenderer=new Fd(a,a,e),this.vertexTexture=this.gpuRenderer.createTexture();for(let u=0;u<this.vertexTexture.image.data.length/4;u++)this.vertexTexture.image.data[u*4]=(Math.random()-.5)*i,this.vertexTexture.image.data[u*4+1]=(Math.random()-.5)*r,this.vertexTexture.image.data[u*4+2]=Math.random()*c,this.vertexTexture.image.data[u*4+3]=0;this.computationVariable=this.gpuRenderer.addVariable("computationTexture",`
             precision highp float;
             
-            uniform float time;
             uniform sampler2D velocityTexture;
             uniform float particleSpeed;
             uniform float dropFactor;
+            uniform bool repeat;
     
-            float rand(vec2 co){
-                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 0.000437585453 * time);
+            float rand(vec2 p){
+                return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453);
             }
     
             vec3 getVelocity(vec2 pos) {
                 float xPx = 1.0 / ${i}.0;
                 float yPx = 1.0 / ${r}.0;
-                vec2 centerUv = vec2((pos.x + ${i*.5}.0) / ${i}.0, 
-                                    (pos.y + ${r*.5}.0) / ${r}.0);
+                vec2 centerUv = vec2(pos.x / ${i}.0 + 0.5, 
+                                    pos.y / ${r}.0 + 0.5);
                 vec3 center = texture2D(velocityTexture, centerUv).rgb;
                 vec3 left = texture2D(velocityTexture, centerUv - vec2(xPx, 0.0)).rgb;
                 vec3 top = texture2D(velocityTexture, centerUv + vec2(0.0, yPx)).rgb;
@@ -3228,17 +3228,31 @@ void main() {
             void main()	{
     
                 vec2 uv = gl_FragCoord.xy / resolution.xy;
-                vec4 position = texture2D( computationTexture, uv );
+                vec4 position = texture2D(computationTexture, uv);
+
                 float age = position.z;
     
                 vec3 velocity = getVelocity(position.xy);
                 if (age > dropFactor) {
                     // reset particle position
-                    vec2 random = vec2((rand(position.xy) - 0.5) * ${i}.0, (rand(position.yz) - 0.5) * ${r}.0);
+                    vec2 random = vec2((rand(position.xy) - 0.5) * ${i}.0, (rand(position.yx) - 0.5) * ${r}.0);
                     gl_FragColor = vec4(random, 0.0, 0.0);
                 } else {
                     float absVelocity = length(velocity.xy);
-                    gl_FragColor = vec4(position.xy + velocity.xy * particleSpeed, age + 1.0, absVelocity);
+                    vec2 newPosition = position.xy + velocity.xy * particleSpeed;
+                    if (repeat) {
+                        if (newPosition.x < -0.5 * ${i}.0) {
+                            newPosition.x += 1.0 * ${i}.0;
+                        } else if (0.5 * ${i}.0 < newPosition.x) {
+                            newPosition.x -= 1.0 * ${i}.0;
+                        }
+                        if (newPosition.y < -0.5 * ${r}.0) {
+                            newPosition.y += 1.0 * ${r}.0;
+                        } else if (0.5 * ${r}.0 < newPosition.y) {
+                            newPosition.y -= 1.0 * ${r}.0;
+                        }
+                    }
+                    gl_FragColor = vec4(newPosition, age + rand(vec2(absVelocity, age)), absVelocity);
                 }
             }
-        `,this.vertexTexture),this.computationVariable.material.uniforms={velocityTexture:{value:this.velocityTexture},time:{value:0},particleSpeed:{value:o},dropFactor:{value:c}},this.gpuRenderer.setVariableDependencies(this.computationVariable,[this.computationVariable]),this.gpuRenderer.init()}getTexture(){return this.gpuRenderer.getCurrentRenderTarget(this.computationVariable).texture}updateVelocityTexture(e){this.computationVariable.material.uniforms.velocityTexture.value=e}updateParticleSpeed(e){this.computationVariable.material.uniforms.particleSpeed.value=e}updateDropFactor(e){this.computationVariable.material.uniforms.dropFactor.value=e}compute(){this.computationVariable.material.uniforms.time.value=performance.now(),this.gpuRenderer.compute()}}class Bd{constructor(e,t,n={}){$e(this,"vertexTexture");$e(this,"particleRenderer");var o,a,c,l,u,d,p;const i=(o=n.width)!=null?o:1024,r=(a=n.height)!=null?a:1024;this.vertexTexture=new Nd(e,t,{width:i,height:r,particleSpeed:(c=n.particleSpeed)!=null?c:2,particleCount:(l=n.particleCount)!=null?l:64,dropFactor:(u=n.dropFactor)!=null?u:50}),this.particleRenderer=new Id(e,this.vertexTexture.getTexture(),{width:i,height:r,particleSize:(d=n.particleSize)!=null?d:3,trajectoryFactor:(p=n.trajectoryFactor)!=null?p:.01})}setVelocityTexture(e){this.vertexTexture.updateVelocityTexture(e)}setParticleSpeed(e){this.vertexTexture.updateParticleSpeed(e)}getParticleTexture(){return this.particleRenderer.getTexture()}render(){this.vertexTexture.compute(),this.particleRenderer.render()}}export{en as D,Bd as G,Od as H,It as M,ke as N,ga as O,ai as P,Cr as S,zd as T,wd as W,Nt as a};
+        `,this.vertexTexture),this.computationVariable.material.uniforms={velocityTexture:{value:this.velocityTexture},particleSpeed:{value:o},dropFactor:{value:c},repeat:{value:l}},this.gpuRenderer.setVariableDependencies(this.computationVariable,[this.computationVariable]),this.gpuRenderer.init()}getTexture(){return this.gpuRenderer.getCurrentRenderTarget(this.computationVariable).texture}updateVelocityTexture(e){this.computationVariable.material.uniforms.velocityTexture.value=e}updateParticleSpeed(e){this.computationVariable.material.uniforms.particleSpeed.value=e}updateDropFactor(e){this.computationVariable.material.uniforms.dropFactor.value=e}compute(){this.gpuRenderer.compute()}}class Bd{constructor(e,t,n={}){$e(this,"vertexTexture");$e(this,"particleRenderer");var o,a,c,l,u,d,p,m;const i=(o=n.width)!=null?o:1024,r=(a=n.height)!=null?a:1024;this.vertexTexture=new Nd(e,t,{width:i,height:r,particleSpeed:(c=n.particleSpeed)!=null?c:2,particleCount:(l=n.particleCount)!=null?l:64,dropFactor:(u=n.dropFactor)!=null?u:50,repeat:(d=n.repeat)!=null?d:!1}),this.particleRenderer=new Id(e,this.vertexTexture.getTexture(),{width:i,height:r,particleSize:(p=n.particleSize)!=null?p:3,trajectoryFactor:(m=n.trajectoryFactor)!=null?m:.01})}setVelocityTexture(e){this.vertexTexture.updateVelocityTexture(e)}setParticleSpeed(e){this.vertexTexture.updateParticleSpeed(e)}getParticleTexture(){return this.particleRenderer.getTexture()}render(){this.vertexTexture.compute(),this.particleRenderer.render()}}export{en as D,Bd as G,Od as H,It as M,ke as N,ga as O,ai as P,Cr as S,zd as T,wd as W,Nt as a};
